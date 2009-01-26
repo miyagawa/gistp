@@ -1,8 +1,8 @@
-= Description
+## Description
 
 Yet another command line client for gist using Perl. Posts a new (public or private) gist, then auto git clone to ~/gists.
 
-= Configuration
+## Configuration
 
 You might want to set environment variable GIST_DIR (or GISTY_DIR) where gistp automaticaly clones your new gists for you. By default it's `~/gists`.
 
@@ -11,13 +11,13 @@ Set global git config as explained in [github account page](http://github.com/ac
     git config --global github.user your_id
     git config --global github.token your_token
 
-= Synopsis
+## Synopsis
 
     echo "foo" | gistp                post a new gist (no name set) 
     gistp file1 file2 ...             post a new gist (with names, can be multiple)
     gistp --private file1             post a new private gist
 
-= Difference with gist and gisty
+## Difference with gist and gisty
 
 [gist](http://github.com/defunkt/gist/tree/master) gets your paste from STDIN, so you can't name your script. [gisty](http://github.com/swdyh/gisty/tree/master) allows you to post files. gistp does both. gisty has more convenient features like list, pull and sync all of your gists, but gistp doesn't do that. And it's written in Perl, unlike others are in Ruby :)
 
