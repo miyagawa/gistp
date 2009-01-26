@@ -1,0 +1,131 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use 5.008001;
+use WWW::Mechanize;
+use Getopt::Long;
+use File::Slurp qw(slurp);
+use Pod::Usage;
+
+my %options;
+GetOptions(\%options, "--private", "--help");
+
+run(\%options, @ARGV);
+
+sub run {
+    my($opts, @args) = @_;
+
+    if ($opts->{help}) {
+        pod2usage(0);
+    }
+
+    my @files = setup_files(@args);
+
+    my %fields;
+    my $i = 1;
+    for my $file (@files) {
+        $fields{"file_name[gistfile$i]"}     = $file->{name};
+        $fields{"file_contents[gistfile$i]"} = $file->{content};
+        $i++;
+    }
+
+    $fields{private} = 'on' if $opts->{private};
+    my %auth = get_auth() or die "No github.user and github.token found. See http://github.com/account\n";
+
+    my($id, $uri) = post_gist({ %fields, %auth });
+    git_clone($id, $uri);
+}
+
+sub setup_files {
+    my @args = @_;
+
+    my @files;
+    if (@args > 0) {
+        for my $arg (@args) {
+            push @files, {
+                name    => $arg,
+                content => scalar slurp($arg),
+            };
+        }
+    } else {
+        my $content = join '', <STDIN>;
+        @files = ({ name => '', content => $content });
+    }
+
+    return @files;
+}
+
+sub post_gist {
+    my $fields = shift;
+
+    my $mech = WWW::Mechanize->new;
+    $mech->get('http://gist.github.com');
+    $mech->submit_form(
+        form_number => 1,
+        fields      => $fields,
+    );
+
+    my $id = ($mech->uri->path =~ m!^/([0-9a-f]+)$!)[0]
+        or die "Creating a gist failed: " . $mech->uri;
+
+    return ($id, $mech->uri);
+}
+
+sub git_clone {
+    my($id, $uri) = @_;
+
+    my $dir = $ENV{GIST_DIR} || $ENV{GISTY_DIR} || "$ENV{HOME}/gists";
+    unless (-e $dir) {
+        mkdir $dir, 0777 or die "$dir: $!";
+    }
+    chdir $dir;
+
+    warn "Created a new gist at $uri\nNow cloning to $dir/$id\n";
+    system "git clone git\@gist.github.com:$id.git";
+}
+
+sub get_auth {
+    my ($self) = @_;
+
+    my($login, $token);
+    if (eval "require Git; 1") {
+        $login = Git::config('github.user');
+        $token = Git::config('github.token');
+    } else {
+        chomp($login = `git config --global github.user`);
+        chomp($token = `git config --global github.token`);
+    }
+
+    return unless $login and $token;
+    return (
+        login => $login,
+        token => $token,
+    );
+}
+
+__END__
+
+=head1 NAME
+
+gistp - Uploads and clone new paste to gist
+
+=head1 SYNOPSIS
+
+  echo foo | gistp
+  gistp code.pl
+  gistp --private foo.rb bar.txt
+
+=head1 DESCRIPTION
+
+See L<README.mkdn> for details.
+
+=head1 LICENSE
+
+same as Perl.
+
+=head1 AUTHOR
+
+Tatsuhiko Miyagawa
+
+=cut
+

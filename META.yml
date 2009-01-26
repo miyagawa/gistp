@@ -1,0 +1,23 @@
+---
+abstract: 'Uploads and clone new paste to gist'
+author:
+  - 'Tatsuhiko Miyagawa'
+distribution_type: module
+generated_by: 'Module::Install version 0.77'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: gistp
+no_index:
+  directory:
+    - inc
+requires:
+  File::Slurp: 0
+  Getopt::Long: 0
+  Pod::Usage: 0
+  WWW::Mechanize: 0
+  perl: 5.8.1
+resources:
+  license: http://dev.perl.org/licenses/
+version: undef
