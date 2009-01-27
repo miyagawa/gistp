@@ -13,9 +13,10 @@ Set global git config as explained in [github account page](http://github.com/ac
 
 ## Synopsis
 
-    echo "foo" | gistp                post a new gist (no name set) 
-    gistp file1 file2 ...             post a new gist (with names, can be multiple)
-    gistp --private file1             post a new private gist
+    echo "foo" | gistp                  post a new gist (no name set) 
+    echo "foo" | gistp --name "foo.txt" post a new gist (with a name)  
+    gistp file1.rb file2.pl ...         post a new gist (with names, can be multiple)
+    gistp --private file1.txt           post a new private gist
 
 ## Difference with gist and gisty
 

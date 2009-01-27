@@ -8,7 +8,7 @@ use File::Slurp qw(slurp);
 use Pod::Usage;
 
 my %options;
-GetOptions(\%options, "--private", "--help");
+GetOptions(\%options, "--name=s", "--private", "--help");
 
 run(\%options, @ARGV);
 
@@ -19,7 +19,7 @@ sub run {
         pod2usage(0);
     }
 
-    my @files = setup_files(@args);
+    my @files = setup_files($opts, @args);
 
     my %fields;
     my $i = 1;
@@ -37,19 +37,19 @@ sub run {
 }
 
 sub setup_files {
-    my @args = @_;
+    my($opts, @args) = @_;
 
     my @files;
-    if (@args > 0) {
+    if (@args == 0 or $args[0] eq '-') {
+        my $content = join '', <STDIN>;
+        @files = ({ name =>  $opts->{name} || '', content => $content });
+    } else {
         for my $arg (@args) {
             push @files, {
                 name    => $arg,
                 content => scalar slurp($arg),
             };
         }
-    } else {
-        my $content = join '', <STDIN>;
-        @files = ({ name => '', content => $content });
     }
 
     return @files;
@@ -111,9 +111,10 @@ gistp - Uploads and clone new paste to gist
 
 =head1 SYNOPSIS
 
-  echo foo | gistp
   gistp code.pl
   gistp --private foo.rb bar.txt
+  echo foo | gistp
+  ls -l | gistp --name ls-output.txt
 
 =head1 DESCRIPTION
 
